@@ -15,40 +15,56 @@ export type ContentBundle = {
 
 // -------- Public read --------
 export const getSiteContent = createServerFn({ method: "GET" }).handler(async (): Promise<ContentBundle> => {
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
-  const sb = createClient<Database>(process.env.SUPABASE_URL!, key, {
-    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
-    global: {
-      fetch: (input, init) => {
-        const headers = new Headers(init?.headers);
-        if (key.startsWith("sb_") && headers.get("Authorization") === `Bearer ${key}`) {
-          headers.delete("Authorization");
-        }
-        headers.set("apikey", key);
-        return fetch(input, { ...init, headers });
+  const fallback: ContentBundle = { content: { ...DEFAULT_CONTENT }, media: {}, gallery: [] };
+  try {
+    const url = process.env.SUPABASE_URL;
+    const key = process.env.SUPABASE_PUBLISHABLE_KEY;
+    if (!url || !key) {
+      console.error("[getSiteContent] Missing SUPABASE_URL or SUPABASE_PUBLISHABLE_KEY on server");
+      return fallback;
+    }
+    const sb = createClient<Database>(url, key, {
+      auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+      global: {
+        fetch: (input, init) => {
+          const headers = new Headers(init?.headers);
+          if (key.startsWith("sb_") && headers.get("Authorization") === `Bearer ${key}`) {
+            headers.delete("Authorization");
+          }
+          headers.set("apikey", key);
+          return fetch(input, { ...init, headers });
+        },
       },
-    },
-  });
-  const [contentRes, mediaRes, galleryRes] = await Promise.all([
-    sb.from("site_content").select("section,data"),
-    sb.from("site_media").select("slot,url,alt"),
-    sb.from("gallery_images").select("id,url,caption,sort_order").order("sort_order", { ascending: true }).order("created_at", { ascending: true }),
-  ]);
+    });
+    const [contentRes, mediaRes, galleryRes] = await Promise.all([
+      sb.from("site_content").select("section,data"),
+      sb.from("site_media").select("slot,url,alt"),
+      sb.from("gallery_images").select("id,url,caption,sort_order").order("sort_order", { ascending: true }).order("created_at", { ascending: true }),
+    ]);
 
-  const content: Record<string, any> = { ...DEFAULT_CONTENT };
-  for (const row of contentRes.data ?? []) {
-    content[row.section] = row.data as any;
-  }
+    if (contentRes.error) console.error("[getSiteContent] site_content:", contentRes.error.message);
+    if (mediaRes.error) console.error("[getSiteContent] site_media:", mediaRes.error.message);
+    if (galleryRes.error) console.error("[getSiteContent] gallery_images:", galleryRes.error.message);
 
-  const media: Record<string, SiteMediaEntry> = {};
-  for (const row of mediaRes.data ?? []) {
-    media[row.slot] = { url: row.url, alt: row.alt ?? undefined };
+    const content: Record<string, any> = { ...DEFAULT_CONTENT };
+    for (const row of contentRes.data ?? []) {
+      content[row.section] = row.data as any;
+    }
+
+    const media: Record<string, SiteMediaEntry> = {};
+    for (const row of mediaRes.data ?? []) {
+      media[row.slot] = { url: row.url, alt: row.alt ?? undefined };
+    }
+    const gallery: GalleryImage[] = (galleryRes.data ?? []).map((r) => ({
+      id: r.id, url: r.url, caption: r.caption, sort_order: r.sort_order,
+    }));
+    return { content, media, gallery };
+  } catch (e) {
+    console.error("[getSiteContent] unexpected failure:", e);
+    return fallback;
   }
-  const gallery: GalleryImage[] = (galleryRes.data ?? []).map((r) => ({
-    id: r.id, url: r.url, caption: r.caption, sort_order: r.sort_order,
-  }));
-  return { content, media, gallery };
 });
+
 
 // -------- Admin: content --------
 export const saveContentSection = createServerFn({ method: "POST" })

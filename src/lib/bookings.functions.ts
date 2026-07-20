@@ -7,24 +7,38 @@ import { syncBookingsToSheet } from "./bookings-sync.server";
 export type ReservedRange = { check_in: string; check_out: string };
 
 export const listReservedRanges = createServerFn({ method: "GET" }).handler(async (): Promise<ReservedRange[]> => {
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
-  const sb = createClient<Database>(process.env.SUPABASE_URL!, key, {
-    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
-    global: {
-      fetch: (input, init) => {
-        const headers = new Headers(init?.headers);
-        if (key.startsWith("sb_") && headers.get("Authorization") === `Bearer ${key}`) {
-          headers.delete("Authorization");
-        }
-        headers.set("apikey", key);
-        return fetch(input, { ...init, headers });
+  try {
+    const url = process.env.SUPABASE_URL;
+    const key = process.env.SUPABASE_PUBLISHABLE_KEY;
+    if (!url || !key) {
+      console.error("[listReservedRanges] Missing SUPABASE_URL or SUPABASE_PUBLISHABLE_KEY on server");
+      return [];
+    }
+    const sb = createClient<Database>(url, key, {
+      auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+      global: {
+        fetch: (input, init) => {
+          const headers = new Headers(init?.headers);
+          if (key.startsWith("sb_") && headers.get("Authorization") === `Bearer ${key}`) {
+            headers.delete("Authorization");
+          }
+          headers.set("apikey", key);
+          return fetch(input, { ...init, headers });
+        },
       },
-    },
-  });
-  const { data, error } = await (sb as any).rpc("get_reserved_ranges");
-  if (error) throw error;
-  return (data ?? []) as ReservedRange[];
+    });
+    const { data, error } = await (sb as any).rpc("get_reserved_ranges");
+    if (error) {
+      console.error("[listReservedRanges] rpc get_reserved_ranges:", error.message);
+      return [];
+    }
+    return (data ?? []) as ReservedRange[];
+  } catch (e) {
+    console.error("[listReservedRanges] unexpected failure:", e);
+    return [];
+  }
 });
+
 
 export type BookingStatus = "new" | "contacted" | "confirmed" | "declined" | "cancelled";
 
