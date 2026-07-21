@@ -921,7 +921,7 @@ function UsersPanel() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-display text-2xl">Users & access</h2>
-          <p className="text-sm text-muted-foreground mt-1">Add viewers who can sign in and see the booking list. Toggle Admin to give full access.</p>
+          <p className="text-sm text-muted-foreground mt-1">Add users who can sign in to view, create, and edit bookings. Toggle Admin to give full access.</p>
         </div>
         <Button onClick={() => setDialogOpen(true)}><UserPlus className="h-4 w-4 mr-1.5" /> Add user</Button>
       </div>
@@ -975,7 +975,7 @@ function UsersPanel() {
             <div className="flex items-center justify-between rounded-md border border-border p-3">
               <div>
                 <Label className="text-sm">Grant admin access</Label>
-                <p className="text-xs text-muted-foreground">Off = viewer (sees booking list only)</p>
+                <p className="text-xs text-muted-foreground">Off = user (can view, create, and edit bookings; cannot delete)</p>
               </div>
               <Switch checked={form.is_admin} onCheckedChange={(v) => setForm({ ...form, is_admin: v })} />
             </div>
