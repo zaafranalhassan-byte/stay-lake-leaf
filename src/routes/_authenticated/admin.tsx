@@ -134,7 +134,7 @@ const emptyForm = (dateStr?: string): FormState => {
   return { guest_name: "", total_guests: 2, check_in: start, check_out: next, phone: "", notes: "", cost: "", status: "confirmed" };
 };
 
-function BookingsPanel() {
+function BookingsPanel({ canDelete = true }: { canDelete?: boolean } = {}) {
   const qc = useQueryClient();
   const listFn = useServerFn(listBookings);
   const upsertFn = useServerFn(upsertBooking);
