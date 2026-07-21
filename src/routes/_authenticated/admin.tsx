@@ -975,7 +975,7 @@ function UsersPanel() {
             <div className="flex items-center justify-between rounded-md border border-border p-3">
               <div>
                 <Label className="text-sm">Grant admin access</Label>
-                <p className="text-xs text-muted-foreground">Off = viewer (sees booking list only)</p>
+                <p className="text-xs text-muted-foreground">Off = user (can view, create, and edit bookings; cannot delete)</p>
               </div>
               <Switch checked={form.is_admin} onCheckedChange={(v) => setForm({ ...form, is_admin: v })} />
             </div>
