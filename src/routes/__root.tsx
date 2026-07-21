@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { getSiteContent } from "@/lib/content.functions";
 
 
 
