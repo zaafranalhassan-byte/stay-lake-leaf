@@ -59,7 +59,25 @@ function AdminPage() {
   }
 
   if (!adminCheck?.isAdmin) {
-    return <ViewerBookings onSignOut={signOut} />;
+    return (
+      <div className="min-h-screen bg-secondary/30">
+        <header className="border-b border-border bg-background/90 backdrop-blur sticky top-0 z-30">
+          <div className="container-page h-16 flex items-center justify-between">
+            <Link to="/" className="flex items-center gap-2 font-display text-lg text-primary">
+              <Leaf className="h-5 w-5" /> Lake Leaf
+              <span className="text-muted-foreground text-sm font-sans">/ bookings</span>
+            </Link>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" asChild><Link to="/">View site</Link></Button>
+              <Button variant="ghost" size="sm" onClick={signOut}><LogOut className="h-4 w-4 mr-1.5" /> Sign out</Button>
+            </div>
+          </div>
+        </header>
+        <main className="container-page py-8">
+          <BookingsPanel canDelete={false} />
+        </main>
+      </div>
+    );
   }
 
   return (
@@ -116,7 +134,7 @@ const emptyForm = (dateStr?: string): FormState => {
   return { guest_name: "", total_guests: 2, check_in: start, check_out: next, phone: "", notes: "", cost: "", status: "confirmed" };
 };
 
-function BookingsPanel() {
+function BookingsPanel({ canDelete = true }: { canDelete?: boolean } = {}) {
   const qc = useQueryClient();
   const listFn = useServerFn(listBookings);
   const upsertFn = useServerFn(upsertBooking);
@@ -269,7 +287,7 @@ function BookingsPanel() {
                 </div>
                 <div className="flex gap-1">
                   <Button variant="ghost" size="icon" onClick={() => openEdit(b)}><Pencil className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="icon" onClick={() => { if (confirm("Delete this booking?")) deleteMutation.mutate(b.id); }}><Trash2 className="h-4 w-4" /></Button>
+                  {canDelete && <Button variant="ghost" size="icon" onClick={() => { if (confirm("Delete this booking?")) deleteMutation.mutate(b.id); }}><Trash2 className="h-4 w-4" /></Button>}
                 </div>
               </div>
             ))}
@@ -302,7 +320,7 @@ function BookingsPanel() {
             <div><Label>Notes (optional)</Label><Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} /></div>
           </div>
           <DialogFooter className="gap-2">
-            {form.id && (
+            {form.id && canDelete && (
               <Button variant="outline" onClick={() => { if (confirm("Delete this booking?")) deleteMutation.mutate(form.id!); }} disabled={deleteMutation.isPending}>
                 <Trash2 className="h-4 w-4 mr-1.5" /> Delete
               </Button>
