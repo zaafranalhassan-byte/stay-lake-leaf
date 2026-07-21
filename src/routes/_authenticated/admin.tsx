@@ -165,7 +165,7 @@ function BookingsPanel({ canDelete = true }: { canDelete?: boolean } = {}) {
   const cells: (string | null)[] = [];
   for (let i = 0; i < firstWeekday; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) {
-    const iso = new Date(view.getFullYear(), view.getMonth(), d).toISOString().slice(0, 10);
+    const iso = `${view.getFullYear()}-${String(view.getMonth() + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
     cells.push(iso);
   }
 
@@ -766,7 +766,7 @@ function ViewerBookings({ onSignOut }: { onSignOut: () => void }) {
   const cells: (string | null)[] = [];
   for (let i = 0; i < firstWeekday; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) {
-    const iso = new Date(view.getFullYear(), view.getMonth(), d).toISOString().slice(0, 10);
+    const iso = `${view.getFullYear()}-${String(view.getMonth() + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
     cells.push(iso);
   }
 
