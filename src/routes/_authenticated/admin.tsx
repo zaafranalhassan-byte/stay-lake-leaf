@@ -287,7 +287,7 @@ function BookingsPanel({ canDelete = true }: { canDelete?: boolean } = {}) {
                 </div>
                 <div className="flex gap-1">
                   <Button variant="ghost" size="icon" onClick={() => openEdit(b)}><Pencil className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="icon" onClick={() => { if (confirm("Delete this booking?")) deleteMutation.mutate(b.id); }}><Trash2 className="h-4 w-4" /></Button>
+                  {canDelete && <Button variant="ghost" size="icon" onClick={() => { if (confirm("Delete this booking?")) deleteMutation.mutate(b.id); }}><Trash2 className="h-4 w-4" /></Button>}
                 </div>
               </div>
             ))}
