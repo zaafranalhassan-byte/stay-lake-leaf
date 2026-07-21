@@ -921,7 +921,7 @@ function UsersPanel() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-display text-2xl">Users & access</h2>
-          <p className="text-sm text-muted-foreground mt-1">Add viewers who can sign in and see the booking list. Toggle Admin to give full access.</p>
+          <p className="text-sm text-muted-foreground mt-1">Add users who can sign in to view, create, and edit bookings. Toggle Admin to give full access.</p>
         </div>
         <Button onClick={() => setDialogOpen(true)}><UserPlus className="h-4 w-4 mr-1.5" /> Add user</Button>
       </div>
