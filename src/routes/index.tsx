@@ -100,10 +100,6 @@ function Nav({ bundle }: { bundle: ContentBundle }) {
         <nav className="hidden md:flex items-center gap-8 text-sm text-foreground/80">
           {links.map(([l, h]) => <a key={h} href={h} className="hover:text-primary transition-colors">{l}</a>)}
         </nav>
-        <a href={wa} target="_blank" rel="noreferrer"
-          className="hidden md:inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary-glow transition-colors">
-          <MessageCircle className="h-4 w-4" /> WhatsApp
-        </a>
         <button className="md:hidden p-2" onClick={() => setOpen(!open)} aria-label="Menu">
           <div className="w-5 h-0.5 bg-foreground mb-1.5" /><div className="w-5 h-0.5 bg-foreground mb-1.5" /><div className="w-5 h-0.5 bg-foreground" />
         </button>
