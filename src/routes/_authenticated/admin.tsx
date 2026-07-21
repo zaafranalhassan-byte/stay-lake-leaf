@@ -59,7 +59,25 @@ function AdminPage() {
   }
 
   if (!adminCheck?.isAdmin) {
-    return <ViewerBookings onSignOut={signOut} />;
+    return (
+      <div className="min-h-screen bg-secondary/30">
+        <header className="border-b border-border bg-background/90 backdrop-blur sticky top-0 z-30">
+          <div className="container-page h-16 flex items-center justify-between">
+            <Link to="/" className="flex items-center gap-2 font-display text-lg text-primary">
+              <Leaf className="h-5 w-5" /> Lake Leaf
+              <span className="text-muted-foreground text-sm font-sans">/ bookings</span>
+            </Link>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" asChild><Link to="/">View site</Link></Button>
+              <Button variant="ghost" size="sm" onClick={signOut}><LogOut className="h-4 w-4 mr-1.5" /> Sign out</Button>
+            </div>
+          </div>
+        </header>
+        <main className="container-page py-8">
+          <BookingsPanel canDelete={false} />
+        </main>
+      </div>
+    );
   }
 
   return (
