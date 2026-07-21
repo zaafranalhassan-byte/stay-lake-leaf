@@ -320,7 +320,7 @@ function BookingsPanel({ canDelete = true }: { canDelete?: boolean } = {}) {
             <div><Label>Notes (optional)</Label><Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} /></div>
           </div>
           <DialogFooter className="gap-2">
-            {form.id && (
+            {form.id && canDelete && (
               <Button variant="outline" onClick={() => { if (confirm("Delete this booking?")) deleteMutation.mutate(form.id!); }} disabled={deleteMutation.isPending}>
                 <Trash2 className="h-4 w-4 mr-1.5" /> Delete
               </Button>
