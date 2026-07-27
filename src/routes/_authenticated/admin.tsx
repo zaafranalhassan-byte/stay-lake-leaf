@@ -128,10 +128,22 @@ type FormState = {
   status: BookingStatus;
 };
 
-const emptyForm = (dateStr?: string): FormState => {
-  const start = dateStr ?? new Date().toISOString().slice(0, 10);
-  const next = new Date(new Date(start).getTime() + 86400000).toISOString().slice(0, 10);
-  return { guest_name: "", total_guests: 2, check_in: start, check_out: next, phone: "", notes: "", cost: "", status: "confirmed" };
+const pad = (n: number) => String(n).padStart(2, "0");
+const toLocalInput = (iso: string) => {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+const fromLocalInput = (v: string) => (v ? new Date(v).toISOString() : v);
+const formatStay = (iso: string) => {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+const localDayKey = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+const emptyForm = (dayIso?: string): FormState => {
+  const base = dayIso ? new Date(dayIso + "T15:00:00") : (() => { const n = new Date(); n.setHours(15, 0, 0, 0); return n; })();
+  const out = new Date(base); out.setDate(out.getDate() + 1); out.setHours(11, 0, 0, 0);
+  return { guest_name: "", total_guests: 2, check_in: toLocalInput(base.toISOString()), check_out: toLocalInput(out.toISOString()), phone: "", notes: "", cost: "", status: "confirmed" };
 };
 
 function BookingsPanel({ canDelete = true }: { canDelete?: boolean } = {}) {
@@ -174,11 +186,13 @@ function BookingsPanel({ canDelete = true }: { canDelete?: boolean } = {}) {
     for (const b of bookings) {
       const start = new Date(b.check_in);
       const end = new Date(b.check_out);
-      for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
-        const key = d.toISOString().slice(0, 10);
+      const cursor = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+      while (cursor < end) {
+        const key = localDayKey(cursor);
         const arr = map.get(key) ?? [];
         arr.push(b);
         map.set(key, arr);
+        cursor.setDate(cursor.getDate() + 1);
       }
     }
     return map;
@@ -188,7 +202,7 @@ function BookingsPanel({ canDelete = true }: { canDelete?: boolean } = {}) {
   const openEdit = (b: Booking) => {
     setForm({
       id: b.id, guest_name: b.guest_name, total_guests: b.total_guests,
-      check_in: b.check_in, check_out: b.check_out,
+      check_in: toLocalInput(b.check_in), check_out: toLocalInput(b.check_out),
       phone: b.phone ?? "", notes: b.notes ?? "",
       cost: b.cost != null ? String(b.cost) : "",
       status: b.status,
@@ -201,7 +215,7 @@ function BookingsPanel({ canDelete = true }: { canDelete?: boolean } = {}) {
       const trimmed = form.cost.trim();
       const cost = trimmed === "" ? null : Number(trimmed);
       if (cost != null && (!Number.isFinite(cost) || cost < 0)) throw new Error("Cost must be a positive number");
-      await upsertFn({ data: { ...form, cost } });
+      await upsertFn({ data: { ...form, check_in: fromLocalInput(form.check_in), check_out: fromLocalInput(form.check_out), cost } });
     },
     onSuccess: () => { toast.success(form.id ? "Booking updated" : "Booking added"); qc.invalidateQueries({ queryKey: ["bookings"] }); setDialogOpen(false); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Save failed"),
@@ -282,7 +296,7 @@ function BookingsPanel({ canDelete = true }: { canDelete?: boolean } = {}) {
                     <Badge variant={b.status === "cancelled" || b.status === "declined" ? "outline" : b.status === "confirmed" ? "default" : "secondary"}>{b.status}</Badge>
                     {b.cost != null && <Badge variant="outline">৳{Number(b.cost).toLocaleString()}</Badge>}
                   </div>
-                  <p className="text-xs text-muted-foreground">{b.check_in} → {b.check_out} · {b.total_guests} guest{b.total_guests !== 1 ? "s" : ""}{b.phone ? ` · ${b.phone}` : ""}</p>
+                  <p className="text-xs text-muted-foreground">{formatStay(b.check_in)} → {formatStay(b.check_out)} · {b.total_guests} guest{b.total_guests !== 1 ? "s" : ""}{b.phone ? ` · ${b.phone}` : ""}</p>
                   {b.notes && <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{b.notes}</p>}
                 </div>
                 <div className="flex gap-1">
@@ -301,8 +315,8 @@ function BookingsPanel({ canDelete = true }: { canDelete?: boolean } = {}) {
           <div className="space-y-4">
             <div><Label>Guest name</Label><Input value={form.guest_name} onChange={(e) => setForm({ ...form, guest_name: e.target.value })} maxLength={200} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Check-in</Label><Input type="date" value={form.check_in} onChange={(e) => setForm({ ...form, check_in: e.target.value })} /></div>
-              <div><Label>Check-out</Label><Input type="date" value={form.check_out} onChange={(e) => setForm({ ...form, check_out: e.target.value })} /></div>
+              <div><Label>Check-in</Label><Input type="datetime-local" value={form.check_in} onChange={(e) => setForm({ ...form, check_in: e.target.value })} /></div>
+              <div><Label>Check-out</Label><Input type="datetime-local" value={form.check_out} onChange={(e) => setForm({ ...form, check_out: e.target.value })} /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Total guests</Label><Input type="number" min={1} value={form.total_guests} onChange={(e) => setForm({ ...form, total_guests: Number(e.target.value) })} /></div>
