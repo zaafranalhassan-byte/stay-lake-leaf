@@ -128,10 +128,22 @@ type FormState = {
   status: BookingStatus;
 };
 
-const emptyForm = (dateStr?: string): FormState => {
-  const start = dateStr ?? new Date().toISOString().slice(0, 10);
-  const next = new Date(new Date(start).getTime() + 86400000).toISOString().slice(0, 10);
-  return { guest_name: "", total_guests: 2, check_in: start, check_out: next, phone: "", notes: "", cost: "", status: "confirmed" };
+const pad = (n: number) => String(n).padStart(2, "0");
+const toLocalInput = (iso: string) => {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+const fromLocalInput = (v: string) => (v ? new Date(v).toISOString() : v);
+const formatStay = (iso: string) => {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+const localDayKey = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+const emptyForm = (dayIso?: string): FormState => {
+  const base = dayIso ? new Date(dayIso + "T15:00:00") : (() => { const n = new Date(); n.setHours(15, 0, 0, 0); return n; })();
+  const out = new Date(base); out.setDate(out.getDate() + 1); out.setHours(11, 0, 0, 0);
+  return { guest_name: "", total_guests: 2, check_in: toLocalInput(base.toISOString()), check_out: toLocalInput(out.toISOString()), phone: "", notes: "", cost: "", status: "confirmed" };
 };
 
 function BookingsPanel({ canDelete = true }: { canDelete?: boolean } = {}) {
