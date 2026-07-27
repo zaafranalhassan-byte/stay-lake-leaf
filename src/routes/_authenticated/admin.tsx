@@ -202,7 +202,7 @@ function BookingsPanel({ canDelete = true }: { canDelete?: boolean } = {}) {
   const openEdit = (b: Booking) => {
     setForm({
       id: b.id, guest_name: b.guest_name, total_guests: b.total_guests,
-      check_in: b.check_in, check_out: b.check_out,
+      check_in: toLocalInput(b.check_in), check_out: toLocalInput(b.check_out),
       phone: b.phone ?? "", notes: b.notes ?? "",
       cost: b.cost != null ? String(b.cost) : "",
       status: b.status,
