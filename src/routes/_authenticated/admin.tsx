@@ -186,11 +186,13 @@ function BookingsPanel({ canDelete = true }: { canDelete?: boolean } = {}) {
     for (const b of bookings) {
       const start = new Date(b.check_in);
       const end = new Date(b.check_out);
-      for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
-        const key = d.toISOString().slice(0, 10);
+      const cursor = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+      while (cursor < end) {
+        const key = localDayKey(cursor);
         const arr = map.get(key) ?? [];
         arr.push(b);
         map.set(key, arr);
+        cursor.setDate(cursor.getDate() + 1);
       }
     }
     return map;
