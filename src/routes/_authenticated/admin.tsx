@@ -315,8 +315,8 @@ function BookingsPanel({ canDelete = true }: { canDelete?: boolean } = {}) {
           <div className="space-y-4">
             <div><Label>Guest name</Label><Input value={form.guest_name} onChange={(e) => setForm({ ...form, guest_name: e.target.value })} maxLength={200} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Check-in</Label><Input type="date" value={form.check_in} onChange={(e) => setForm({ ...form, check_in: e.target.value })} /></div>
-              <div><Label>Check-out</Label><Input type="date" value={form.check_out} onChange={(e) => setForm({ ...form, check_out: e.target.value })} /></div>
+              <div><Label>Check-in</Label><Input type="datetime-local" value={form.check_in} onChange={(e) => setForm({ ...form, check_in: e.target.value })} /></div>
+              <div><Label>Check-out</Label><Input type="datetime-local" value={form.check_out} onChange={(e) => setForm({ ...form, check_out: e.target.value })} /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Total guests</Label><Input type="number" min={1} value={form.total_guests} onChange={(e) => setForm({ ...form, total_guests: Number(e.target.value) })} /></div>
