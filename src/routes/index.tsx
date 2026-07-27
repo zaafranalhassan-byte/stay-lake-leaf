@@ -422,8 +422,8 @@ function Availability({ bundle }: { bundle: ContentBundle }) {
     const y = view.getFullYear();
     const m = view.getMonth();
     for (const r of ranges as ReservedRange[]) {
-      const start = new Date(r.check_in + "T00:00:00");
-      const end = new Date(r.check_out + "T00:00:00");
+      const start = new Date(r.check_in);
+      const end = new Date(r.check_out);
       for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
         if (d.getFullYear() === y && d.getMonth() === m) set.add(d.getDate());
       }
