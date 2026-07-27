@@ -215,7 +215,7 @@ function BookingsPanel({ canDelete = true }: { canDelete?: boolean } = {}) {
       const trimmed = form.cost.trim();
       const cost = trimmed === "" ? null : Number(trimmed);
       if (cost != null && (!Number.isFinite(cost) || cost < 0)) throw new Error("Cost must be a positive number");
-      await upsertFn({ data: { ...form, cost } });
+      await upsertFn({ data: { ...form, check_in: fromLocalInput(form.check_in), check_out: fromLocalInput(form.check_out), cost } });
     },
     onSuccess: () => { toast.success(form.id ? "Booking updated" : "Booking added"); qc.invalidateQueries({ queryKey: ["bookings"] }); setDialogOpen(false); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Save failed"),
